@@ -1,0 +1,3 @@
+- insert:
+    - id: dsh-gateway
+      name: '/srv/dsh-plugins/dsh-gateway/src/index.ts'
