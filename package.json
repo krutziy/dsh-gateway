@@ -1,0 +1,19 @@
+{
+  "name": "dsh-gateway",
+  "version": "0.1.0",
+  "description": "Pure forwarding gateway plugin for DeepSeek Harness: HTTP + WebSocket reverse proxy with settings card, zero dependencies",
+  "type": "module",
+  "main": "index.js",
+  "files": ["index.js", "cordis.patch.yml"],
+  "keywords": ["dsh", "deepseek-harness", "gateway", "proxy"],
+  "license": "MIT",
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/schemastery": "*"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

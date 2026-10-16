@@ -1,17 +1,8 @@
-import type { Context, Volatile } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
 import http from 'node:http'
 import net from 'node:net'
+import z from '@deepseek-ai/schemastery'
 
 export const name = 'dsh-gateway'
-
-export interface Config {
-  host: Volatile<string>
-  port: Volatile<number>
-  targetHost: Volatile<string>
-  targetPort: Volatile<number>
-  token: Volatile<string>
-}
 
 // 导出 Config schema 后，dsh 插件页面会自动生成设置表单，保存即热更新。
 export const Config = z.object({
@@ -22,17 +13,17 @@ export const Config = z.object({
   token: z.string().role('secret').default('').volatile().description('可选访问令牌，留空不鉴权'),
 })
 
-export function apply(ctx: Context, config: Config) {
+export function apply(ctx, config) {
   const logger = ctx.logger ?? console
 
-  function start(): () => void {
+  function start() {
     const host = config.host.get()
     const port = config.port.get()
     const targetHost = config.targetHost.get()
     const targetPort = config.targetPort.get()
     const token = config.token.get()
 
-    function authorized(req: http.IncomingMessage): boolean {
+    function authorized(req) {
       if (!token) return true
       const auth = req.headers.authorization || ''
       const q = new URL(req.url || '/', 'http://x').searchParams.get('token') || ''
@@ -44,7 +35,7 @@ export function apply(ctx: Context, config: Config) {
         res.writeHead(401, { 'content-type': 'text/plain; charset=utf-8' })
         return res.end('unauthorized: missing or invalid token')
       }
-      const headers: Record<string, string | string[]> = { ...req.headers }
+      const headers = { ...req.headers }
       headers.host = `${targetHost}:${targetPort}`
       delete headers.authorization
 
@@ -55,7 +46,7 @@ export function apply(ctx: Context, config: Config) {
           upstreamRes.pipe(res)
         },
       )
-      upstream.on('error', (err: Error) => {
+      upstream.on('error', (err) => {
         if (!res.headersSent) res.writeHead(502, { 'content-type': 'text/plain; charset=utf-8' })
         res.end(`gateway upstream error: ${err.message}`)
       })
@@ -69,7 +60,7 @@ export function apply(ctx: Context, config: Config) {
         return
       }
       const upstreamSocket = net.connect(targetPort, targetHost, () => {
-        const headers: Record<string, string | string[]> = { ...req.headers }
+        const headers = { ...req.headers }
         headers.host = `${targetHost}:${targetPort}`
         delete headers.authorization
 
@@ -90,7 +81,7 @@ export function apply(ctx: Context, config: Config) {
       socket.on('error', () => upstreamSocket.destroy())
     })
 
-    server.on('error', (err: NodeJS.ErrnoException) => {
+    server.on('error', (err) => {
       logger.error(`[dsh-gateway] listen failed: ${err.message}`)
     })
 
@@ -98,7 +89,7 @@ export function apply(ctx: Context, config: Config) {
       logger.info(`[dsh-gateway] http://${host}:${port} -> http://${targetHost}:${targetPort}${token ? ' (token on)' : ''}`)
     })
 
-    return () => new Promise<void>((resolve) => server.close(() => resolve()))
+    return () => new Promise((resolve) => server.close(() => resolve()))
   }
 
   let stop = start()
