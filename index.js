@@ -196,5 +196,8 @@ export function apply(ctx, config) {
     })()
   })
 
-  ctx.effect(() => stop())
+  // 注意：ctx.effect 的 setup 必须返回清理函数本身（不是调用结果）。
+  // 若返回 stop() 的 Promise，Cordis 会在 apply 后立即处理该 Promise，
+  // 导致 server.close() 在 listen 完成前被调用、绑定被静默中止。
+  ctx.effect(() => stop)
 }

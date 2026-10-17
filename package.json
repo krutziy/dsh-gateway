@@ -1,6 +1,6 @@
 {
   "name": "dsh-gateway",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Pure forwarding gateway plugin for DeepSeek Harness: HTTP + WebSocket reverse proxy with settings card",
   "type": "module",
   "main": "index.js",
