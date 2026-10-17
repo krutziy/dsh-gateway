@@ -49,6 +49,12 @@ http://127.0.0.1:3081/__gateway__/status
 
 v0.2.0 起，网关会自动探测 dsh web 绑定的是 IPv4 还是 IPv6 并改连可达地址（`上游 127.0.0.1 不可达，已改连 ::1`），双栈问题已自动处理。若 status 显示两个地址都不可达，说明 dsh web 没在目标端口运行——检查「转发目标端口」配置是否与实际一致。
 
+## 安装问题排查
+
+- `dsh plugin add github:krutziy/dsh-gateway` 报 prepare/allowBuilds 相关错误：本包是纯 JS、无构建脚本，此报错通常是 GitHub 拉取超时，**直接重试**即可
+- 装完后 3081 没监听：插件代码随 dsh 进程加载，**必须完整重启 dsh web**（remove/add 后不重启不生效）
+- 验证三板斧：`ss -tlnp | grep 3081` → `curl 127.0.0.1:3081/__gateway__/status` → 看启动日志有没有 `[dsh-gateway]` 行
+
 ## 说明
 
 - 纯转发：不做改写、不限流，出问题时直接连 dsh web 端口排查
